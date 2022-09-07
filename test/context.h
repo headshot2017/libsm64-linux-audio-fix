@@ -7,6 +7,7 @@
 #   include <SDL2/SDL.h>
 #elif _WIN32
 #   define HAVE_M_PI
+#   define SDL_MAIN_HANDLED
 #   include <GL/glew.h>
 #   include <SDL.h>
 #else
