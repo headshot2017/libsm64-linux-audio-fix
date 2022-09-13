@@ -6,11 +6,16 @@ CFLAGS  := -g -Wall -fPIC -DSM64_LIB_EXPORT -DVERSION_US -DNO_SEGMENTED_MEMORY -
 LDFLAGS := -lm -shared -lpthread
 ENDFLAGS := -fPIC
 
+DIST_DIR  := dist
+LIB_FILE  := $(DIST_DIR)/libsm64.so
+
 ifeq ($(OS),Windows_NT)
+LIB_FILE  := $(DIST_DIR)/sm64.dll
 LDFLAGS := $(LDFLAGS) -mwindows
 ENDFLAGS := -static -lole32 -lstdc++
 
 else ifeq ($(shell uname -s),Darwin)
+LIB_FILE  := $(DIST_DIR)/libsm64.dylib
 CFLAGS := $(CFLAGS) -DUSE_SDL2
 ENDFLAGS := -undefined dynamic_lookup -lSDL2
 
@@ -21,10 +26,8 @@ endif
 
 SRC_DIRS  := src src/decomp src/decomp/engine src/decomp/include/PR src/decomp/game src/decomp/pc src/decomp/pc/audio src/decomp/mario src/decomp/tools src/decomp/audio
 BUILD_DIR := build
-DIST_DIR  := dist
 ALL_DIRS  := $(addprefix $(BUILD_DIR)/,$(SRC_DIRS))
 
-LIB_FILE   := $(DIST_DIR)/libsm64.so
 LIB_H_FILE := $(DIST_DIR)/include/libsm64.h
 TEST_FILE  := run-test
 
@@ -42,7 +45,6 @@ TEST_OBJS := $(foreach file,$(TEST_SRCS),$(BUILD_DIR)/$(file:.c=.o))
 
 ifeq ($(OS),Windows_NT)
   TEST_FILE := $(DIST_DIR)/$(TEST_FILE)
-  LIB_FILE := $(DIST_DIR)/sm64.dll
 endif
 
 DUMMY != mkdir -p $(ALL_DIRS) build/test src/decomp/mario $(DIST_DIR)/include 
@@ -53,17 +55,21 @@ src/decomp/mario/geo.inc.c: ./import-mario-geo.py
 	./import-mario-geo.py
 
 $(BUILD_DIR)/%.o: %.c $(IMPORTED)
+	@mkdir -p $(@D)
 	@$(CC) $(CFLAGS) -MM -MP -MT $@ -MF $(BUILD_DIR)/$*.d $<
 	$(CC) -c $(CFLAGS) -isystem src/decomp/include -o $@ $<
 
 $(BUILD_DIR)/%.o: %.cpp $(IMPORTED)
+	@mkdir -p $(@D)
 	@$(CXX) $(CFLAGS) -MM -MP -MT $@ -MF $(BUILD_DIR)/$*.d $<
 	$(CXX) -c $(CFLAGS) -isystem src/decomp/include -o $@ $<
 
 $(LIB_FILE): $(O_FILES)
+	@mkdir $(DIST_DIR)
 	$(CC) $(LDFLAGS) -o $@ $^ $(ENDFLAGS)
 
 $(LIB_H_FILE): src/libsm64.h
+	@mkdir -p $(DIST_DIR)/include
 	cp -f $< $@
 
 
