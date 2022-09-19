@@ -65,7 +65,7 @@ $(BUILD_DIR)/%.o: %.cpp $(IMPORTED)
 	$(CXX) -c $(CFLAGS) -isystem src/decomp/include -o $@ $<
 
 $(LIB_FILE): $(O_FILES)
-	@mkdir $(DIST_DIR)
+	@mkdir -p $(DIST_DIR)
 	$(CC) $(LDFLAGS) -o $@ $^ $(ENDFLAGS)
 
 $(LIB_H_FILE): src/libsm64.h
@@ -88,7 +88,7 @@ endif
 
 $(TEST_FILE): $(LIB_FILE) $(TEST_OBJS)
 ifeq ($(OS),Windows_NT)
-	$(CC) -o $@ $(TEST_OBJS) $(LIB_FILE) `sdl2-config --cflags --libs` -lglew32 -lglu32 -lopengl32 -lSDL2 -lSDL2main -lm
+	$(CC) -o $@ $(TEST_OBJS) $(LIB_FILE) -lglew32 -lglu32 -lopengl32 -lSDL2 -lSDL2main -lm
 else
 	$(CC) -o $@ $(TEST_OBJS) $(LIB_FILE) -lGLEW -lGL -lSDL2 -lSDL2main -lm
 endif
